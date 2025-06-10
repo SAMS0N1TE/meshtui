@@ -1,6 +1,6 @@
 # meshtui
 
-A terminal-based interactive chat interface for Meshtastic LoRa devices. `meshtui` provides a curses-powered UI for real-time messaging, device discovery, and per-node direct messaging, all within the Linux terminal.
+A terminal-based interactive chat interface for Meshtastic LoRa devices. `meshtui` provides a curses-powered UI for real-time messaging, device discovery, and per-node direct messaging, all within the Linux terminal. I made this to help in the devlopment process when I realized I needed a nice and easy way to send messages over SSH from other devices.
 
 ---
 
