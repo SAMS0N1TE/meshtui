@@ -36,3 +36,8 @@ A terminal-based interactive chat interface for Meshtastic LoRa devices. `meshtu
 
 ```bash
 pip install meshtastic pyserial pypubsub
+```
+
+### Launching
+
+After installation, run `python meshtui.py` to start the application.
