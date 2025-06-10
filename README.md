@@ -18,7 +18,7 @@ A terminal-based interactive chat interface for Meshtastic LoRa devices. `meshtu
 
 ## Screenshot
 
-
+![Screenshot](screenshots/meshtui-preview.png)
 
 ---
 
