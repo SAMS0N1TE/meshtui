@@ -42,9 +42,9 @@ pip install -r requirements.txt
 
 Run the TUI:
 
-Copy
-Edit
 python main.py
+
+
 Select a serial port in settings mode (arrow keys + Enter).
 
 Press F8 to switch between Settings/Chat.
