@@ -42,7 +42,6 @@ pip install -r requirements.txt
 
 Run the TUI:
 
-```bash
 Copy
 Edit
 python main.py
