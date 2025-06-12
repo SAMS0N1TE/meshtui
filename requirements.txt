@@ -1,3 +1,4 @@
 meshtastic
 pyserial
+prompt-toolkit
 pypubsub
