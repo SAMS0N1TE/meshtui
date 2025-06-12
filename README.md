@@ -1,5 +1,3 @@
-## Screenshot
-
 ![Screenshot](screenshots/mesh_preview1.png)
 
 # Meshtastic TUI
