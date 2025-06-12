@@ -24,7 +24,6 @@ class Event(Enum):
 
 
 class AppState:
-    """A centralized class to hold and process the application's state."""
 
     def __init__(self, max_messages=200):
         self.tui_state = TuiState.SETTINGS
@@ -55,7 +54,6 @@ class AppState:
         }
 
     def _format_traceroute(self, packet):
-        """Parses a traceroute packet and returns a formatted string."""
         try:
             route_discovery = mesh_pb2.RouteDiscovery()
             route_discovery.ParseFromString(packet["decoded"]["payload"])
@@ -77,7 +75,6 @@ class AppState:
             return "Failed to parse traceroute."
 
     def process_event(self, event_type, data):
-        """Processes events from the handler to update state."""
         if event_type == Event.MESSAGE_SENT:
             msg_id, text, dest_id = data
             is_dm = dest_id != meshtastic.BROADCAST_NUM
@@ -119,11 +116,6 @@ class AppState:
         decoded = packet.get('decoded', {})
         portnum = decoded.get('portnum')
 
-        # FIX: Removed the debugging log that displayed all incoming packets.
-        # debug_msg = f"Packet IN: from='{packet.get('from')}', port='{portnum}', snr='{packet.get('rxSnr')}'"
-        # self._add_system_message(debug_msg)
-        # logging.info(debug_msg)
-
         sender_id = packet.get('from')
         if sender_id and sender_id in self.nodes:
             self.nodes[sender_id]['lastHeard'] = packet.get('rxTime')
@@ -157,7 +149,6 @@ class AppState:
                 self.unread_dm_senders.add(sender_id)
 
     def get_node_list(self):
-        """Returns a sorted list of nodes for the UI, with Broadcast at the top."""
         broadcast = {'id': None, 'name': '[ Broadcast (All) ]'}
         other_nodes = [n for n in self.nodes.values() if n.get('id') != self.my_node_num]
 
@@ -169,7 +160,6 @@ class AppState:
         return [broadcast] + sorted(other_nodes, key=sort_key)
 
     def get_current_messages(self):
-        """Returns the message list for the currently active view (Broadcast or DM)."""
         if self.dm_target_id:
             self.unread_dm_senders.discard(self.dm_target_id)
             target_ids = {self.my_node_num, self.dm_target_id}
@@ -181,7 +171,6 @@ class AppState:
         return sorted(messages, key=lambda m: m['timestamp'])
 
     def get_dm_target_name(self):
-        """Returns the name of the current DM target, if any."""
         if self.dm_target_id:
             return self.nodes.get(self.dm_target_id, {}).get('name', f"!{self.dm_target_id:x}")
         return None
