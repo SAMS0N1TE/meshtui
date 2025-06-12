@@ -1,38 +1,51 @@
-# meshtui
+## Screenshot
 
-A terminal-based interactive chat interface for Meshtastic LoRa devices. `meshtui` provides a curses-powered UI for real-time messaging, device discovery, and per-node direct messaging, all within the Linux terminal. I made this to help in the devlopment process when I realized I needed a nice and easy way to send messages over SSH from other devices.
+![Screenshot](screenshots/meshtui-preview.png)
+
+# Meshtastic TUI
+
+A cross-platform terminal user interface (TUI) for Meshtastic radios, written in Python using `prompt_toolkit`.  
+Control, chat, and manage nodes on your Meshtastic mesh network. Features dynamic serial port detection, node monitoring, direct messaging, and routing diagnostics.
 
 ---
 
 ## Features
 
-- Real-time chat over Meshtastic LoRa mesh networks
-- Automatically discovers nearby nodes and channels
-- Broadcast and direct messaging (DM)
-- Channel switching via keyboard shortcuts
-- Dynamic serial port detection and connection management
-- Logfile-based debug output
-- Responsive TUI layout with panels for messages, nodes, status, and input
-
----
-
-## Screenshot
-
-![Screenshot](screenshots/meshtui-preview.png)
+- **Real-Time Meshtastic Chat:** Send/receive broadcast and direct (DM) messages.
+- **Dynamic Serial Port Selection:** Auto-detect all available serial ports, switch via TUI.
+- **Node List Monitoring:** View nodes, SNR, last-heard, and select for DM or traceroute.
+- **Traceroute Diagnostics:** Visualize mesh routes to any node (F5 key).
+- **Message Status:** Shows delivery and error status.
+- **Custom Theme/Keybinds:** Color scheme and efficient navigation.
 
 ---
 
 ## Installation
 
-### Requirements
+### Prerequisites
 
-- Python 3.7+
-- Meshtastic Python API
-- `pyserial`
-- `pubsub`
-- `curses` (built-in for Unix/Linux platforms)
+- Python 3.9+
+- meshtastic-python
+- prompt_toolkit
+- pyserial
+- pubsub
 
-### Install with `pip`
+### Install dependencies
 
 ```bash
-pip install meshtastic pyserial pypubsub
+pip install prompt_toolkit pyserial meshtastic-python pubsub
+or
+pip install -r requirements.txt
+
+
+**### Connect your Meshtastic radio via USB.**
+
+Run the TUI:
+
+```bash
+Copy
+Edit
+python main.py
+Select a serial port in settings mode (arrow keys + Enter).
+
+Press F8 to switch between Settings/Chat.
