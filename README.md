@@ -57,7 +57,7 @@ If you're on Linux or macOS, you will need to run the application from source. E
 1. **Clone the repository:**
 
    ```
-   git clone [https://github.com/SAMS0N1tE/meshtui.git](https://github.com/SAMS0N1tE/meshtui.git)
+   git clone https://github.com/SAMS0N1tE/meshtui.git
    cd meshtui
    
    ```
