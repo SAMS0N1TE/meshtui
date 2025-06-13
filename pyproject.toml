@@ -2,7 +2,7 @@
 name = "meshtui"
 version = "1.0.0"
 authors = [
-  { name="SAMS0N1TE", email="support@terminalbay.com },
+  { name="SAMS0N1TE", email="support@terminalbay.com" }, # <--- Added the missing double quote here
 ]
 description = "A terminal user interface for Meshtastic."
 readme = "README.md"
