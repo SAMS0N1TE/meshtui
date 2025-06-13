@@ -45,78 +45,72 @@ Before you begin, make sure you have the following installed on your system:
 
 ## Installation Steps
 
-Follow these instructions to get **meshtui** set up:
+### For Windows Users (Executable)
 
-### 1. Clone the Repository
+Simply download the `MeshTUI.exe` from the assets of the release.
+Run it directly!
 
-Open your terminal and run:
+### For Linux and macOS Users (From Source)
 
-```bash
-git clone https://github.com/SAMS0N1TE/meshtui.git
-cd meshtui
-```
+If you're on Linux or macOS, you will need to run the application from source. Ensure you have Python 3.x installed, then:
 
----
+1. **Clone the repository:**
 
-### 2. Create a Virtual Environment (Recommended)
+   ```
+   git clone [https://github.com/SAMS0N1tE/meshtui.git](https://github.com/SAMS0N1tE/meshtui.git)
+   cd meshtui
+   
+   ```
 
-Use a virtual environment to keep dependencies isolated:
+   (Replace `your-username/your-repo-name` with the actual path to your repository.)
 
-```bash
-python3 -m venv .venv
-```
+2. **Create and activate a virtual environment (recommended):**
 
----
+   ```
+   python -m venv venv
+   # On macOS/Linux:
+   source venv/bin/activate
+   
+   ```
 
-### 3. Activate the Virtual Environment
+3. **Install dependencies:**
 
-**On Linux/macOS:**
+   ```
+   pip install -r requirements.txt
+   
+   ```
 
-```bash
-source .venv/bin/activate
-```
+4. **Run the application:**
 
-**On Windows (Command Prompt):**
+   ```
+   python main.py
+   
+   ```
 
-```dos
-.venv\Scripts\activate.bat
-```
+## Basic Usage
 
-**On Windows (PowerShell):**
+* **`F8`**: Toggle between Chat view and Settings (Port Selection).
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
+* **`Tab`**: Switch between the Input and Nodes panels in Chat view.
 
----
+* **`Enter`**:
 
-### 4. Install Meshtui
+  * In Input panel: Send message.
 
-With your virtual environment active, install the project:
+  * In Nodes panel: Select a node for DM.
 
-```bash
-pip install .
-```
+  * In Settings panel: Select a port to connect.
 
----
+* **`Escape`**: Exit DM mode and return to Broadcast chat.
 
-## Running Meshtui
+* **`F5` (in Nodes panel)**: Send a traceroute to the selected node. (Broken for now, will work on a fix!)
 
-After installation, launch meshtui by running:
+* **`F6`**: Cycle through available themes.
 
-```bash
-meshtui
-```
+* **`Ctrl+C` or `Ctrl+Q`**: Quit the application.
 
-(Ensure your virtual environment is active.)
+## 💡 Feedback & Contributions
 
----
+This is an initial release, and we welcome your feedback! If you encounter any bugs, have suggestions for new features, or would like to contribute, please open an issue or a pull request on the GitHub repository.
 
-## Deactivating the Virtual Environment
-
-When finished, deactivate the virtual environment:
-
-```bash
-deactivate
-```
 
