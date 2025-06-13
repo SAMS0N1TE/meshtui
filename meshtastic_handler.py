@@ -5,7 +5,16 @@ from enum import Enum, auto
 import platform
 import subprocess
 import serial
-import termios
+
+# Conditional import for termios, as it's Unix-specific
+if platform.system() != "Windows":
+    import termios
+else:
+    # On Windows, define a dummy termios error for consistent error handling
+    class TermiosError(Exception):
+        pass
+    termios = type('termios', (object,), {'error': TermiosError})()
+
 
 import meshtastic
 import meshtastic.serial_interface
@@ -79,7 +88,7 @@ class MeshtasticHandler:
             error_msg = f"Timed out connecting to {port}. Check cable or reboot device."
             self._handle_error(error_msg, (Event.CONNECTION_STATUS, ("Timeout", "Device not responding", False)))
             self._cleanup_connection()
-        except termios.error as e:
+        except termios.error as e: # This will now only be caught on Unix-like systems
             error_msg = f"OS Error on port {port}: {e}. Check permissions (are you in the 'dialout' group?) or if the device is valid."
             self._handle_error(error_msg,
                                (Event.CONNECTION_STATUS, ("OS Error", "Check permissions", False)))
