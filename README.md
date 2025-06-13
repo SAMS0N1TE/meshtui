@@ -1,4 +1,4 @@
-![Screenshot](screenshots/theme1.png)
+![Screenshot](screenshots/uconsole.jpg)
 
 # Meshtastic TUI
 
