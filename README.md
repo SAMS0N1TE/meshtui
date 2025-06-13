@@ -1,4 +1,4 @@
-![Screenshot](screenshots/uconsole.jpg)
+![Screenshot](screenshots/uconsole.png)
 
 # Meshtastic TUI
 
