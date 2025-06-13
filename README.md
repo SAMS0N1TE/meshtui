@@ -3,7 +3,7 @@
 # Meshtastic TUI
 
 A cross-platform terminal user interface (TUI) for Meshtastic radios, written in Python using `prompt_toolkit`.  
-Control, chat, and manage nodes on your Meshtastic mesh network. Features dynamic serial port detection, node monitoring, direct messaging, and routing diagnostics.
+Control, chat, and manage nodes on your Meshtastic mesh network. Features dynamic serial port detection, node monitoring, and direct messaging.
 
 
 ![Screenshot](screenshots/theme2.png)
@@ -14,7 +14,6 @@ Control, chat, and manage nodes on your Meshtastic mesh network. Features dynami
 - **Real-Time Meshtastic Chat:** Send/receive broadcast and direct (DM) messages.
 - **Dynamic Serial Port Selection:** Auto-detect all available serial ports, switch via TUI.
 - **Node List Monitoring:** View nodes, SNR, last-heard, and select for DM or traceroute.
-- **Traceroute Diagnostics:** Visualize mesh routes to any node (F5 key).
 - **Message Status:** Shows delivery and error status.
 - **Custom Theme/Keybinds:** Color scheme and efficient navigation.
 
