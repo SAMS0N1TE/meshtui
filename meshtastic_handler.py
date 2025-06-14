@@ -25,14 +25,11 @@ from pubsub import pub
 from app_state import Event
 
 class HandlerState(Enum):
-    """Represents the internal state of the Meshtastic handler."""
     DISCONNECTED = auto()
     CONNECTING = auto()
     CONNECTED = auto()
 
 class MeshtasticHandler:
-    """Handles all interactions with the Meshtastic device in a separate thread."""
-
     def __init__(self, command_queue: queue.Queue, update_queue: queue.Queue, app):
         logging.info("Meshtastic handler initialized.")
         self.command_queue = command_queue
@@ -88,7 +85,7 @@ class MeshtasticHandler:
             error_msg = f"Timed out connecting to {port}. Check cable or reboot device."
             self._handle_error(error_msg, (Event.CONNECTION_STATUS, ("Timeout", "Device not responding", False)))
             self._cleanup_connection()
-        except termios.error as e: # This will now only be caught on Unix-like systems
+        except termios.error as e:
             error_msg = f"OS Error on port {port}: {e}. Check permissions (are you in the 'dialout' group?) or if the device is valid."
             self._handle_error(error_msg,
                                (Event.CONNECTION_STATUS, ("OS Error", "Check permissions", False)))
@@ -106,9 +103,6 @@ class MeshtasticHandler:
             try:
                 pub.unsubAll()
                 self.interface.close()
-                # FIX: Add a small delay to give the OS time to release the serial port lock.
-                # This prevents a race condition where the app tries to reconnect to a port
-                # that it just closed but which the OS hasn't fully released yet.
                 time.sleep(0.25)
                 logging.info("Interface closed and OS given time to release lock.")
             except Exception as e:
@@ -116,7 +110,6 @@ class MeshtasticHandler:
             finally:
                 self.interface = None
 
-        # This should only be done once after cleanup is complete.
         if self._handler_state != HandlerState.DISCONNECTED:
             self._handler_state = HandlerState.DISCONNECTED
             self.update_queue.put((Event.CONNECTION_STATUS, ("Disconnected", "Select port", False)))
