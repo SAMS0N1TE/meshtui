@@ -114,7 +114,6 @@ class MeshtasticTUI:
     def _get_key_bindings(self):
         kb = KeyBindings()
 
-        # FIX: Split the decorators onto separate lines.
         @kb.add("c-c", eager=True)
         @kb.add("c-q", eager=True)
         def _(event):
