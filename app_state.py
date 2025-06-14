@@ -6,7 +6,6 @@ import google.protobuf.json_format
 from meshtastic.protobuf import mesh_pb2, portnums_pb2
 
 import meshtastic
-# Import the themes from the new themes.py file
 from themes import THEMES
 
 class TuiState(Enum):
@@ -39,7 +38,6 @@ class AppState:
         self.message_states = {}
         self.unread_dm_senders = set()
 
-        # --- Theme-related state ---
         self.available_themes = list(THEMES.keys())
         self.current_theme_index = 0
 
