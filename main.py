@@ -11,15 +11,14 @@ def main():
     setup_logging()
     logging.info("Application starting up.")
 
-    command_queue = queue.Queue()  # For TUI -> Handler commands
-    update_queue = queue.Queue()   # For Handler -> TUI state updates
+    command_queue = queue.Queue()
+    update_queue = queue.Queue()
     app_state = AppState()
 
     tui = MeshtasticTUI(app_state, command_queue, update_queue)
 
     handler = MeshtasticHandler(command_queue, update_queue, tui.app)
 
-    # Start the Meshtastic handler in a background thread
     meshtastic_thread = Thread(
         target=handler.run,
         name="MeshtasticThread",
