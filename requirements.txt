@@ -2,3 +2,5 @@ meshtastic
 pyserial
 prompt-toolkit
 pypubsub
+requests
+Pillow
