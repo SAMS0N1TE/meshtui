@@ -1,4 +1,4 @@
-# themes.py
+# goog/themes.py
 
 THEMES = {
     'default': {
@@ -15,6 +15,10 @@ THEMES = {
         "message.dm": "fg:ansibrightmagenta",
         "message.error": "fg:ansired bold",
         "node.notification": "fg:ansiyellow bold",
+        "button": "bg:ansigray fg:ansiblack",
+        "map.water": "fg:ansiblue",
+        "map.land": "fg:ansigreen",
+        "map.structure": "fg:ansibrightblack",
     },
     'forest': {
         "frame": "bg:#002b36 fg:#839496",
@@ -30,6 +34,10 @@ THEMES = {
         "message.dm": "fg:#d33682",
         "message.error": "fg:#dc322f bold",
         "node.notification": "fg:#b58900 bold",
+        "button": "bg:#586e75 fg:#eee8d5",
+        "map.water": "fg:#268bd2",
+        "map.land": "fg:#859900",
+        "map.structure": "fg:#657b83",
     },
     'windows_95': {
         "frame": "bg:#c0c0c0 fg:#000000",
@@ -45,6 +53,10 @@ THEMES = {
         "message.dm": "fg:#800000",
         "message.error": "fg:#ff0000 bold",
         "node.notification": "fg:#000080 bold",
+        "button": "bg:#c0c0c0 fg:#000000",
+        "map.water": "fg:#0000ff",
+        "map.land": "fg:#008000",
+        "map.structure": "fg:#808080",
     },
     'matrix': {
         "frame": "bg:#000000 fg:#00ff00",
@@ -60,6 +72,10 @@ THEMES = {
         "message.dm": "fg:#ffffff",
         "message.error": "fg:#ffffff bg:#550000 bold",
         "node.notification": "fg:#00ff00 bold",
+        "button": "bg:#005500 fg:#ffffff",
+        "map.water": "fg:#008800",
+        "map.land": "fg:#00ff00",
+        "map.structure": "fg:#005500",
     },
     'cyberpunk': {
         "frame": "bg:#0c0c1e fg:#c4c4ff",
@@ -75,6 +91,10 @@ THEMES = {
         "message.dm": "fg:#ff00ff",
         "message.error": "fg:#ff5555 bold",
         "node.notification": "fg:#ffff00 bold",
+        "button": "bg:#ffff00 fg:#000000",
+        "map.water": "fg:#00ffff",
+        "map.land": "fg:#ff00ff",
+        "map.structure": "fg:#c4c4ff",
     },
     'solarized_dark': {
         "frame": "bg:#002b36 fg:#839496",
@@ -90,6 +110,10 @@ THEMES = {
         "message.dm": "fg:#d33682",
         "message.error": "fg:#dc322f bold",
         "node.notification": "fg:#cb4b16",
+        "button": "bg:#586e75 fg:#eee8d5",
+        "map.water": "fg:#268bd2",
+        "map.land": "fg:#859900",
+        "map.structure": "fg:#93a1a1",
     },
     'dracula': {
         "frame": "bg:#282a36 fg:#f8f8f2",
@@ -105,6 +129,10 @@ THEMES = {
         "message.dm": "fg:#ff79c6",
         "message.error": "fg:#ff5555 bold",
         "node.notification": "fg:#f1fa8c",
+        "button": "bg:#44475a fg:#f8f8f2",
+        "map.water": "fg:#bd93f9",
+        "map.land": "fg:#50fa7b",
+        "map.structure": "fg:#6272a4",
     },
     'monokai': {
         "frame": "bg:#272822 fg:#f8f8f2",
@@ -120,6 +148,10 @@ THEMES = {
         "message.dm": "fg:#66d9ef",
         "message.error": "fg:#f92672 bold",
         "node.notification": "fg:#fd971f",
+        "button": "bg:#75715e fg:#272822",
+        "map.water": "fg:#66d9ef",
+        "map.land": "fg:#a6e22e",
+        "map.structure": "fg:#f8f8f2",
     },
     'gruvbox': {
         "frame": "bg:#282828 fg:#ebdbb2",
@@ -135,6 +167,10 @@ THEMES = {
         "message.dm": "fg:#b16286",
         "message.error": "fg:#fb4934 bold",
         "node.notification": "fg:#fe8019 bold",
+        "button": "bg:#fabd2f fg:#282828",
+        "map.water": "fg:#458588",
+        "map.land": "fg:#b8bb26",
+        "map.structure": "fg:#928374",
     },
     'night_owl': {
         "frame": "bg:#011627 fg:#d6deeb",
@@ -150,6 +186,10 @@ THEMES = {
         "message.dm": "fg:#c792ea",
         "message.error": "fg:#ef5350 bold",
         "node.notification": "fg:#f78c6c bold",
+        "button": "bg:#82aaff fg:#011627",
+        "map.water": "fg:#82aaff",
+        "map.land": "fg:#addb67",
+        "map.structure": "fg:#637777",
     },
     'one_dark': {
         "frame": "bg:#282c34 fg:#abb2bf",
@@ -165,6 +205,10 @@ THEMES = {
         "message.dm": "fg:#c678dd",
         "message.error": "fg:#e06c75 bold",
         "node.notification": "fg:#e5c07b bold",
+        "button": "bg:#61afef fg:#282c34",
+        "map.water": "fg:#61afef",
+        "map.land": "fg:#98c379",
+        "map.structure": "fg:#5c6370",
     },
     'vaporwave': {
         "frame": "bg:#2d1b3b fg:#f7c1ff",
@@ -180,6 +224,10 @@ THEMES = {
         "message.dm": "fg:#ff71ce",
         "message.error": "fg:#ff71ce bold",
         "node.notification": "fg:#05ffa1 bold",
+        "button": "bg:#05ffa1 fg:#2d1b3b",
+        "map.water": "fg:#01cdfe",
+        "map.land": "fg:#ff71ce",
+        "map.structure": "fg:#f7c1ff",
     },
     'nord': {
         "frame": "bg:#2e3440 fg:#d8dee9",
@@ -195,6 +243,10 @@ THEMES = {
         "message.dm": "fg:#b48ead",
         "message.error": "fg:#bf616a bold",
         "node.notification": "fg:#ebcb8b bold",
+        "button": "bg:#88c0d0 fg:#2e3440",
+        "map.water": "fg:#81a1c1",
+        "map.land": "fg:#a3be8c",
+        "map.structure": "fg:#4c566a",
     },
     'tokyo_night': {
         "frame": "bg:#1a1b26 fg:#c0caf5",
@@ -210,6 +262,10 @@ THEMES = {
         "message.dm": "fg:#bb9af7",
         "message.error": "fg:#f7768e bold",
         "node.notification": "fg:#e0af68 bold",
+        "button": "bg:#7aa2f7 fg:#1a1b26",
+        "map.water": "fg:#7aa2f7",
+        "map.land": "fg:#9ece6a",
+        "map.structure": "fg:#565f89",
     },
     'github_dark': {
         "frame": "bg:#0d1117 fg:#c9d1d9",
@@ -225,6 +281,10 @@ THEMES = {
         "message.dm": "fg:#d2a8ff",
         "message.error": "fg:#ff7b72 bold",
         "node.notification": "fg:#79c0ff bold",
+        "button": "bg:#21262d fg:#79c0ff",
+        "map.water": "fg:#79c0ff",
+        "map.land": "fg:#85e89d",
+        "map.structure": "fg:#484f58",
     },
     'retro_terminal': {
         "frame": "bg:#101010 fg:#33ff33",
@@ -240,6 +300,10 @@ THEMES = {
         "message.dm": "fg:#ff00ff",
         "message.error": "fg:#ff0000 bold",
         "node.notification": "fg:#ffff00 bold",
+        "button": "bg:#00ff00 fg:#191919",
+        "map.water": "fg:#0000ff",
+        "map.land": "fg:#33ff33",
+        "map.structure": "fg:#808080",
     },
     'powerline': {
         "frame": "bg:#222d31 fg:#b7c5d3",
@@ -255,6 +319,10 @@ THEMES = {
         "message.dm": "fg:#ec7600",
         "message.error": "fg:#e74856 bold",
         "node.notification": "fg:#ec7600 bold",
+        "button": "bg:#fbb829 fg:#232e34",
+        "map.water": "fg:#0095ff",
+        "map.land": "fg:#a6e22e",
+        "map.structure": "fg:#4e5a5e",
     },
     'oceanic': {
         "frame": "bg:#223344 fg:#c5dfff",
@@ -270,5 +338,9 @@ THEMES = {
         "message.dm": "fg:#ffae57",
         "message.error": "fg:#ff5c57 bold",
         "node.notification": "fg:#ffd700 bold",
+        "button": "bg:#44b9b9 fg:#1b2b34",
+        "map.water": "fg:#00ffff",
+        "map.land": "fg:#99cc33",
+        "map.structure": "fg:#667788",
     },
 }
