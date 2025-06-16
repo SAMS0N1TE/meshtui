@@ -274,6 +274,7 @@ class MeshtasticTUI:
                 destination_id = self.state.dm_target_id if self.state.dm_target_id else meshtastic.BROADCAST_NUM
                 self.command_queue.put((Event.SEND_TEXT, (text, destination_id)))
                 self.input_field.text = ""
+                event.app.invalidate()
 
         @kb.add("escape", filter=is_chat)
         def _(event):
