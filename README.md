@@ -64,14 +64,21 @@ If you're on Linux or macOS, you will need to run the application from source. E
 
    (Replace `your-username/your-repo-name` with the actual path to your repository.)
 
-2. **Create and activate a virtual environment (recommended):**
-
-   ```
-   python -m venv venv
-   # On macOS/Linux:
-   source venv/bin/activate
-   
-   ```
+2.  **Create and activate a virtual environment (Recommended, but not required):**
+    This keeps the project's dependencies isolated. Run these commands inside the project directory (`MIM`):
+    ```bash
+    python -m venv venv
+    ```
+    Now, activate the environment:
+    * **Windows (Command Prompt/PowerShell):**
+        ```bash
+        .\venv\Scripts\activate
+        ```
+    * **Linux / macOS (bash/zsh):**
+        ```bash
+        source venv/bin/activate
+        ```
+    You should see `(venv)` appear at the beginning of your terminal prompt.
 
 3. **Install dependencies:**
 
