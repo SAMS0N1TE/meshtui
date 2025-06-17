@@ -6,7 +6,7 @@ A cross-platform terminal user interface (TUI) for Meshtastic radios, written in
 Control, chat, and manage nodes on your Meshtastic mesh network. Features dynamic serial port detection, node monitoring, and direct messaging.
 
 
-![Screenshot](screenshots/theme2.png)
+![Screenshot](screenshots/Map2.png)
 ---
 
 ## Features
