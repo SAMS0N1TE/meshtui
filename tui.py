@@ -11,8 +11,7 @@ from prompt_toolkit import Application
 from prompt_toolkit.data_structures import Point
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout.containers import HSplit, VSplit, Window, ConditionalContainer, AnyContainer, FloatContainer, \
-    Float, WindowAlign
+from prompt_toolkit.layout.containers import HSplit, VSplit, Window, ConditionalContainer, AnyContainer, FloatContainer, Float, WindowAlign
 from prompt_toolkit.layout.scrollable_pane import ScrollablePane
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
@@ -21,8 +20,10 @@ from prompt_toolkit.styles import Style, DynamicStyle
 from prompt_toolkit.mouse_events import MouseEventType
 from prompt_toolkit.formatted_text import ANSI
 
-from app_state import AppState, TuiState, Panel, Event
 
+# This is the correct way to get the Event enum, by importing it.
+# The incorrect definition has been removed.
+from app_state import AppState, TuiState, Panel, Event
 
 class ButtonControl(FormattedTextControl):
     def __init__(self, text, on_click):
@@ -39,7 +40,6 @@ class ButtonControl(FormattedTextControl):
             return None
         return NotImplemented
 
-
 def get_time_ago(timestamp):
     if not timestamp or timestamp == 0: return "never"
     try:
@@ -50,7 +50,6 @@ def get_time_ago(timestamp):
         return f"{delta.seconds}s ago"
     except (TypeError, ValueError):
         return "invalid"
-
 
 class NodesControl(FormattedTextControl):
     def __init__(self, tui_instance, *args, **kwargs):
@@ -71,7 +70,6 @@ class NodesControl(FormattedTextControl):
             return None
         return NotImplemented
 
-
 class SettingsControl(FormattedTextControl):
     def __init__(self, tui_instance, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,7 +87,6 @@ class SettingsControl(FormattedTextControl):
             return None
         return NotImplemented
 
-
 class MeshtasticTUI:
     def __init__(self, state: AppState, command_queue: queue.Queue, update_queue: queue.Queue):
         logging.info("Initializing TUI.")
@@ -102,9 +99,26 @@ class MeshtasticTUI:
 
     def _create_ui_elements(self):
         self.chat_control = FormattedTextControl(text=[], focusable=False)
+        
+        # --- Start of suggested change ---
+
+        def get_nodes_cursor_pos():
+            node_list = self.state.get_node_list()
+            # If the list is empty, there is no valid cursor position.
+            if not node_list:
+                return None
+            # If the selected line is outside the list's bounds, the state is
+            # inconsistent. Return None to prevent a crash.
+            if self.state.nodes_selected_line >= len(node_list):
+                return None
+            # Only if the index is valid should we return a cursor position.
+            return Point(x=0, y=self.state.nodes_selected_line)
+
+        # --- End of suggested change ---
+
         self.nodes_control = NodesControl(
             self, text=[], focusable=True,
-            get_cursor_position=lambda: Point(x=0, y=self.state.nodes_selected_line)
+            get_cursor_position=get_nodes_cursor_pos
         )
         self.status_control = FormattedTextControl(text=[], focusable=False)
         self.settings_control = SettingsControl(
@@ -113,46 +127,45 @@ class MeshtasticTUI:
         )
         self.map_control = FormattedTextControl(text=[], focusable=False)
         self.input_field = TextArea(height=1, multiline=False, wrap_lines=False, prompt=">> ")
-
+        
         # Map Buttons
-        self.zoom_in_button = ButtonControl("[ + Zoom In ]", lambda: self.update_queue.put((Event.MAP_ZOOM_IN, None)))
-        self.zoom_out_button = ButtonControl("[ - Zoom Out]", lambda: self.update_queue.put((Event.MAP_ZOOM_OUT, None)))
-
+        self.zoom_in_button = ButtonControl("[+Zoom]", lambda: self.update_queue.put((Event.MAP_ZOOM_IN, None)))
+        self.zoom_out_button = ButtonControl("[-Zoom]", lambda: self.update_queue.put((Event.MAP_ZOOM_OUT, None)))
         def center_on_selection():
             node_list = self.state.get_node_list()
             if self.state.nodes_selected_line < len(node_list):
                 node_id = node_list[self.state.nodes_selected_line].get('id')
                 self.update_queue.put((Event.MAP_CENTER_ON_NODE, node_id))
-
-        self.center_button = ButtonControl("[ Center on Selection ]", center_on_selection)
-        self.recenter_all_button = ButtonControl("[ Recenter All ]",
-                                                 lambda: self.update_queue.put((Event.MAP_RECENTER, None)))
+        self.center_button = ButtonControl("[Center on Sel.]", center_on_selection)
+        self.recenter_all_button = ButtonControl("[Recenter All]", lambda: self.update_queue.put((Event.MAP_RECENTER, None)))
         self.pan_up_button = ButtonControl("  ^ (W)  ", lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_UP, None)))
-        self.pan_down_button = ButtonControl("  v (S)  ",
-                                             lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_DOWN, None)))
+        self.pan_down_button = ButtonControl("  v (S)  ", lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_DOWN, None)))
         self.pan_left_button = ButtonControl("< (A)", lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_LEFT, None)))
-        self.pan_right_button = ButtonControl("(D) >",
-                                              lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_RIGHT, None)))
-        self.charset_button = ButtonControl("[ Cycle Charset (F9) ]",
-                                            lambda: self.update_queue.put((Event.MAP_CYCLE_CHARSET, None)))
+        self.pan_right_button = ButtonControl("(D) >", lambda: self.update_queue.put((Event.MAP_MOVE_CURSOR_RIGHT, None)))
+        self.charset_button = ButtonControl("[Charset (F9)]", lambda: self.update_queue.put((Event.MAP_CYCLE_CHARSET, None)))
+        self.map_style_button = ButtonControl("[Map Style (F10)]", lambda: self.update_queue.put((Event.MAP_CYCLE_TILE_SOURCE, None)))
 
         self.map_info_control = FormattedTextControl(text=[], focusable=False)
 
     def _create_application(self):
         root_container = HSplit([
-            Label(text=" Meshtastic TUI - F6:Theme | F7:Map | F8:Settings | F9:Charset | Ctrl+C:Quit",
-                  style="class:header"),
-            ConditionalContainer(content=self._create_chat_layout(),
-                                 filter=Condition(lambda: self.state.tui_state == TuiState.CHAT)),
-            ConditionalContainer(content=self._create_settings_layout(),
-                                 filter=Condition(lambda: self.state.tui_state == TuiState.SETTINGS)),
-            ConditionalContainer(content=self._create_map_layout(),
-                                 filter=Condition(lambda: self.state.tui_state == TuiState.MAP)),
+            Label(text=" Meshtastic TUI - F6:Theme | F7:Map | F8:Settings | F9:Charset | F10:Map Style | Ctrl+C:Quit", style="class:header"),
+            ConditionalContainer(content=self._create_chat_layout(), filter=Condition(lambda: self.state.tui_state == TuiState.CHAT)),
+            ConditionalContainer(content=self._create_settings_layout(), filter=Condition(lambda: self.state.tui_state == TuiState.SETTINGS)),
+            ConditionalContainer(content=self._create_map_layout(), filter=Condition(lambda: self.state.tui_state == TuiState.MAP)),
         ])
         dynamic_style = DynamicStyle(lambda: Style.from_dict(self.state.get_current_theme()))
-        return Application(layout=Layout(root_container, focused_element=self.settings_control),
-                           key_bindings=self._get_key_bindings(),
+        return Application(layout=Layout(root_container, focused_element=self.settings_control), key_bindings=self._get_key_bindings(),
                            full_screen=True, style=dynamic_style, before_render=self._before_render, mouse_support=True)
+
+    def _get_chat_title(self): 
+        return f" DM: {self.state.get_dm_target_name()} " if self.state.dm_target_id else " Broadcast (All) "
+
+    def _get_nodes_title(self): 
+        return [("", " "), (f"class:frame.label{' reverse' if self.state.active_panel == Panel.NODES and self.state.tui_state == TuiState.CHAT else ''}", "Nodes"), ("", " ")]
+
+    def _get_input_title(self): 
+        return [("", " "), (f"class:frame.label{' reverse' if self.state.active_panel == Panel.INPUT else ''}", "Input"), ("", " ")]
 
     def _create_chat_layout(self):
         nodes_pane = ScrollablePane(Window(self.nodes_control, always_hide_cursor=True))
@@ -175,13 +188,11 @@ class MeshtasticTUI:
         )
         map_window = Window(
             self.map_control,
-            width=70,
-            height=22,
-            dont_extend_width=True,
-            dont_extend_height=True
+            dont_extend_width=False,
+            dont_extend_height=False
         )
         map_pane = Frame(title="Map (WASD to move cursor, Enter to center)", body=map_window)
-
+        
         d_pad = HSplit([
             Window(content=self.pan_up_button, height=1, align=WindowAlign.CENTER),
             VSplit([
@@ -190,17 +201,17 @@ class MeshtasticTUI:
             ], height=1, align=WindowAlign.CENTER),
             Window(content=self.pan_down_button, height=1, align=WindowAlign.CENTER),
         ])
-
+        
         controls_pane = Frame(
             title="Controls",
             body=HSplit([
-                Window(height=1, content=self.zoom_in_button),
-                Window(height=1, content=self.zoom_out_button),
+                VSplit([Window(self.zoom_in_button), Window(self.zoom_out_button)]),
                 Window(height=1, content=self.center_button),
                 Window(height=1, content=self.recenter_all_button),
                 Window(height=1, content=self.charset_button),
+                Window(height=1, content=self.map_style_button),
                 Frame(title="Move Cursor", body=d_pad),
-                Frame(title="Info", body=Window(self.map_info_control, height=5)),
+                Frame(title="Info", body=Window(self.map_info_control, height=6)),
             ]),
             width=28
         )
@@ -217,8 +228,7 @@ class MeshtasticTUI:
             event.app.exit()
 
         @kb.add("f6")
-        def _(event):
-            self.state.cycle_theme()
+        def _(event): self.state.cycle_theme()
 
         @kb.add("f7")
         def _(event):
@@ -232,41 +242,37 @@ class MeshtasticTUI:
             else:
                 self.state.tui_state = TuiState.SETTINGS
                 event.app.layout.focus(self.settings_control)
-
+        
         @kb.add("f9")
         def _(event):
             self.update_queue.put((Event.MAP_CYCLE_CHARSET, None))
+            
+        @kb.add("f10")
+        def _(event):
+            self.update_queue.put((Event.MAP_CYCLE_TILE_SOURCE, None))
 
         is_chat = Condition(lambda: self.state.tui_state == TuiState.CHAT)
         is_input = Condition(lambda: self.state.active_panel == Panel.INPUT and is_chat())
         is_nodes = Condition(lambda: self.state.active_panel == Panel.NODES and is_chat())
         is_map = Condition(lambda: self.state.tui_state == TuiState.MAP)
-
+        
         @kb.add("w", filter=is_map)
-        def _(event):
-            self.update_queue.put((Event.MAP_MOVE_CURSOR_UP, None))
-
+        def _(event): self.update_queue.put((Event.MAP_MOVE_CURSOR_UP, None))
         @kb.add("s", filter=is_map)
-        def _(event):
-            self.update_queue.put((Event.MAP_MOVE_CURSOR_DOWN, None))
-
+        def _(event): self.update_queue.put((Event.MAP_MOVE_CURSOR_DOWN, None))
         @kb.add("a", filter=is_map)
-        def _(event):
-            self.update_queue.put((Event.MAP_MOVE_CURSOR_LEFT, None))
-
+        def _(event): self.update_queue.put((Event.MAP_MOVE_CURSOR_LEFT, None))
         @kb.add("d", filter=is_map)
-        def _(event):
-            self.update_queue.put((Event.MAP_MOVE_CURSOR_RIGHT, None))
-
+        def _(event): self.update_queue.put((Event.MAP_MOVE_CURSOR_RIGHT, None))
+        
         @kb.add("enter", filter=is_map)
-        def _(event):
-            self.update_queue.put((Event.MAP_CENTER_ON_CURSOR, None))
-
+        def _(event): self.update_queue.put((Event.MAP_CENTER_ON_CURSOR, None))
+        
         @kb.add("tab", filter=is_chat)
         def _(event):
             self.state.active_panel = Panel.NODES if self.state.active_panel == Panel.INPUT else Panel.INPUT
             event.app.layout.focus(self.nodes_control if self.state.active_panel == Panel.NODES else self.input_field)
-
+        
         @kb.add("enter", filter=is_input)
         def _(event):
             text = self.input_field.text.strip()
@@ -274,131 +280,128 @@ class MeshtasticTUI:
                 destination_id = self.state.dm_target_id if self.state.dm_target_id else meshtastic.BROADCAST_NUM
                 self.command_queue.put((Event.SEND_TEXT, (text, destination_id)))
                 self.input_field.text = ""
-                event.app.invalidate()
-
+        
         @kb.add("escape", filter=is_chat)
-        def _(event):
-            self.state.dm_target_id = None; self.state.active_panel = Panel.INPUT; event.app.layout.focus(
-                self.input_field)
-
+        def _(event): self.state.dm_target_id = None; self.state.active_panel = Panel.INPUT; event.app.layout.focus(self.input_field)
+        
         @kb.add("f5", filter=is_nodes)
         def _(event):
             node_list = self.state.get_node_list()
             if self.state.nodes_selected_line < len(node_list):
                 selected_node_id = node_list[self.state.nodes_selected_line].get('id')
                 if selected_node_id: self.command_queue.put((Event.SEND_TRACEROUTE, selected_node_id))
-
+        
         @kb.add("up", filter=is_nodes | is_map)
-        def _(event):
-            self.state.nodes_selected_line = max(0, self.state.nodes_selected_line - 1)
-
+        def _(event): self.state.nodes_selected_line = max(0, self.state.nodes_selected_line - 1)
+        
         @kb.add("down", filter=is_nodes | is_map)
         def _(event):
-            self.state.nodes_selected_line = min(len(self.state.get_node_list()) - 1,
-                                                 self.state.nodes_selected_line + 1)
-
+            node_list = self.state.get_node_list()
+            # Only change the index if the list is not empty
+            if node_list:
+                self.state.nodes_selected_line = min(len(node_list) - 1, self.state.nodes_selected_line + 1)
+        
         @kb.add("enter", filter=is_nodes)
         def _(event):
             node_list = self.state.get_node_list()
             if self.state.nodes_selected_line < len(node_list):
                 self.state.dm_target_id = node_list[self.state.nodes_selected_line]['id']
-                self.state.active_panel = Panel.INPUT;
-                event.app.layout.focus(self.input_field)
-
+                self.state.active_panel = Panel.INPUT; event.app.layout.focus(self.input_field)
+        
         is_settings = Condition(lambda: self.state.tui_state == TuiState.SETTINGS)
-
         @kb.add("up", filter=is_settings)
-        def _(event):
-            self.state.settings_selected_line = max(0, self.state.settings_selected_line - 1)
-
+        def _(event): self.state.settings_selected_line = max(0, self.state.settings_selected_line - 1)
+        
         @kb.add("down", filter=is_settings)
         def _(event):
-            if self.state.available_ports: self.state.settings_selected_line = min(len(self.state.available_ports) - 1,
-                                                                                   self.state.settings_selected_line + 1)
-
+            if self.state.available_ports: self.state.settings_selected_line = min(len(self.state.available_ports) - 1, self.state.settings_selected_line + 1)
+        
         @kb.add("enter", filter=is_settings)
         def _(event):
             if self.state.settings_selected_line < len(self.state.available_ports):
                 port = self.state.available_ports[self.state.settings_selected_line].device
                 self.command_queue.put((Event.SET_PORT, port))
-                self.state.tui_state = TuiState.CHAT;
-                event.app.layout.focus(self.input_field)
-
+                self.state.tui_state = TuiState.CHAT; event.app.layout.focus(self.input_field)
         return kb
-
-    def _get_chat_title(self):
-        return f" DM: {self.state.get_dm_target_name()} " if self.state.dm_target_id else " Broadcast (All) "
-
-    def _get_nodes_title(self):
-        return [("", " "),
-                (f"class:frame.label{' reverse' if self.state.active_panel == Panel.NODES else ''}", "Nodes"),
-                ("", " ")]
-
-    def _get_input_title(self):
-        return [("", " "),
-                (f"class:frame.label{' reverse' if self.state.active_panel == Panel.INPUT else ''}", "Input"),
-                ("", " ")]
 
     def _handle_events(self):
         while True:
-            try:
-                event, data = self.update_queue.get_nowait(); self.state.process_event(event, data)
-            except queue.Empty:
-                break
+            try: event, data = self.update_queue.get_nowait(); self.state.process_event(event, data)
+            except queue.Empty: break
 
     def _update_ui_text(self):
         try:
+            rows, cols = self.app.renderer.output.get_size()
+            
             if self.state.tui_state == TuiState.CHAT:
                 messages = self.state.get_current_messages()
                 chat_fragments = []
                 for msg in messages:
                     status_map = {'SENDING': '[?]', 'DELIVERED': '[✓]', 'FAILED': '[X]'}
                     sender_id = msg['sender_id']
-                    if sender_id == self.state.my_node_num:
-                        sender_name = "You"
-                    elif isinstance(sender_id, int):
-                        sender_name = self.state.nodes.get(sender_id, {}).get('name', f"!{sender_id:x}")
-                    else:
-                        sender_name = str(sender_id)
-                    style = "class:message.local" if sender_name == "You" else (
-                        "class:message.dm" if msg['is_dm'] else "class:message.remote")
+                    if sender_id == self.state.my_node_num: sender_name = "You"
+                    elif isinstance(sender_id, int): sender_name = self.state.nodes.get(sender_id, {}).get('name', f"!{sender_id:x}")
+                    else: sender_name = str(sender_id)
+                    style = "class:message.local" if sender_name == "You" else ("class:message.dm" if msg['is_dm'] else "class:message.remote")
                     if msg['status'] == 'SYSTEM': style = 'class:message.error'
                     status_indicator = status_map.get(msg['status'], '')
-                    chat_fragments.append(
-                        (style, f"[{msg['timestamp']}] <{sender_name}> {status_indicator} {msg['text']}\n"))
+                    chat_fragments.append((style, f"[{msg['timestamp']}] <{sender_name}> {status_indicator} {msg['text']}\n"))
                 self.chat_control.text = chat_fragments
 
-            node_fragments = []
-            for i, node in enumerate(self.state.get_node_list()):
-                is_selected = i == self.state.nodes_selected_line
-                style = "class:list.item.selected" if is_selected else ""
-                prefix = "> " if is_selected else "  "
-                if node['id'] is None: node_fragments.append((style, f"{prefix}{node['name']}\n")); continue
-                notif = "* " if node.get('id') in self.state.unread_dm_senders else ""
-                name = node.get('name', 'N/A')[:16];
-                snr_val = node.get('snr');
-                ago = get_time_ago(node.get('lastHeard'))
-                snr_str = f"{snr_val:.1f}" if isinstance(snr_val, (int, float)) else str(snr_val)
-                map_button = " [M]" if node.get('latitude') else "    "
-                node_fragments.append((style, f"{prefix}{notif}{name:<16} {snr_str:>4}db {ago:>8}{map_button}\n"))
-            self.nodes_control.text = node_fragments
+            node_list = self.state.get_node_list()
+            # First, ensure the selected line is not a negative index.
+            if self.state.nodes_selected_line < 0:
+                self.state.nodes_selected_line = 0
 
+            # If the list of nodes is empty, just reset the selection.
+            if not node_list:
+                self.state.nodes_selected_line = 0
+                node_fragments = []
+            else:
+                # If the list is not empty, ensure the selection is within the valid bounds.
+                if self.state.nodes_selected_line >= len(node_list):
+                    self.state.nodes_selected_line = len(node_list) - 1
+                
+                # Now, build the node fragments for display
+                node_fragments = []
+                for i, node in enumerate(node_list):
+                    is_selected = i == self.state.nodes_selected_line
+                    style = "class:list.item.selected" if is_selected else ""
+                    prefix = "> " if is_selected else "  "
+                    if node['id'] is None: node_fragments.append((style, f"{prefix}{node['name']}\n")); continue
+                    notif = "* " if node.get('id') in self.state.unread_dm_senders else ""
+                    name = node.get('name', 'N/A')[:16]; snr_val = node.get('snr'); ago = get_time_ago(node.get('lastHeard'))
+                    snr_str = f"{snr_val:.1f}" if isinstance(snr_val, (int, float)) else str(snr_val)
+                    map_button = " [M]" if node.get('latitude') else "    "
+                    node_fragments.append((style, f"{prefix}{notif}{name:<16} {snr_str:>4}db {ago:>8}{map_button}\n"))
+            
+            self.nodes_control.text = node_fragments
+            
             if self.state.tui_state == TuiState.MAP:
-                self.map_control.text = self.state.get_ascii_map()
+                map_width = cols - 30 - 28 - 4
+                map_height = rows - 3
+                logging.debug(f"Map render size: {map_width} cols × {map_height} rows")
+                
+                if map_width <= 0 or map_height <= 0:
+                    # Show an explicit error instead of a blank screen
+                    self.map_control.text = [
+                        ("class:message.error", f"Map pane too small: {map_width}×{map_height}")
+                    ]
+                else:
+                    self.map_control.text = self.state.get_ascii_map(map_width, map_height)
                 lat = self.state.map_center_lat or 0
                 lon = self.state.map_center_lon or 0
                 zoom = self.state.map_zoom or 'N/A'
                 char_set_name, _ = self.state.map_char_sets[self.state.map_char_set_index]
-                self.map_info_control.text = f"Lat: {lat:.4f}\nLon: {lon:.4f}\nZoom: {zoom}\nCharset: {char_set_name}"
+                map_style_name, _ = self.state.map_sources[self.state.map_source_index]
+                self.map_info_control.text = f"Lat: {lat:.4f}\nLon: {lon:.4f}\nZoom: {zoom}\nCharset: {char_set_name}\nStyle: {map_style_name}"
 
             status_color = "bold" if self.state.is_connected else "class:message.error"
-            self.status_control.text = [(status_color, f" {self.state.connection_status} "), ("",
-                                                                                              f" {self.state.connection_details} | Theme: {self.state.get_current_theme_name()}")]
+            self.status_control.text = [ (status_color, f" {self.state.connection_status} "), ("", f" {self.state.connection_details} | Theme: {self.state.get_current_theme_name()}")]
 
             self.state.available_ports = list_ports.comports()
             settings_fragments = [("", "Detected Serial Ports:\n\n")]
-            if not self.state.available_ports:
-                settings_fragments.append(("", "  No serial ports found."))
+            if not self.state.available_ports: settings_fragments.append(("", "  No serial ports found."))
             else:
                 for i, port in enumerate(self.state.available_ports):
                     style = "class:list.item.selected" if i == self.state.settings_selected_line else ""
@@ -407,11 +410,7 @@ class MeshtasticTUI:
         except Exception as e:
             logging.error(f"Error during UI update: {e}", exc_info=True)
 
-    def _before_render(self, app):
-        self._handle_events(); self._update_ui_text()
-
+    def _before_render(self, app): self._handle_events(); self._update_ui_text()
     def run(self):
-        try:
-            self.app.run()
-        finally:
-            logging.info("TUI run loop finished."); self.app_is_running = False
+        try: self.app.run()
+        finally: logging.info("TUI run loop finished."); self.app_is_running = False
