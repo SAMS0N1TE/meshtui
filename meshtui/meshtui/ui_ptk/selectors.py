@@ -6,12 +6,12 @@ async def choose_dm_node(app, state):
     if not nodes:
         await message_dialog(title="No Nodes", text="No nodes available.").run_async()
         return
-    values = [(n["num"], f"{n['short']}  #{n['num']}") for n in nodes]
+    values = [(n["num"], f"{n['short']}  #{n['num']:x}") for n in nodes]
     sel = await radiolist_dialog(title="Select DM Node", text="Choose a node:", values=values).run_async()
     if sel is None:
         return
     state.set_dm(int(sel))
-    state.add_log(f"DM target set to #{sel}")
+    state.add_log(f"DM target set to #{sel:x}")
     app.invalidate()
 
 async def choose_channels(app, state):

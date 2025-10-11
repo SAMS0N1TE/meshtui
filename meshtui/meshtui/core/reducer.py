@@ -8,7 +8,6 @@ def apply_event(state, ev):
     if isinstance(ev, events.Beacon):
         state.upsert_node(ev.num, ev.short, ev.ts)
     elif isinstance(ev, events.RxText):
-        print("\a")
         state.last_rx_time = time.time()
         # If the message is a broadcast, or a DM to us, add it to the chat
         if ev.dst == BROADCAST:

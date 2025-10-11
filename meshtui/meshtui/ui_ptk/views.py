@@ -6,9 +6,26 @@ from prompt_toolkit.widgets import Label, TextArea, Checkbox, Box
 from prompt_toolkit.mouse_events import MouseEventType
 from prompt_toolkit.application import get_app
 from prompt_toolkit.layout.dimension import Dimension
+from prompt_toolkit.layout.margins import ScrollbarMargin
 from meshtui.themes import ThemeManager
 from meshtui.ui_ptk import dialogs
 from meshtui.ui_ptk.controls import FlatButtonWindow
+from meshtui.ui_ptk.text_sanitize import sanitize_text
+from meshtui.model import STATUS_SYMBOL, MsgStatus
+
+def format_age(seconds: float) -> str:
+    """Formats a duration in seconds into a human-readable string."""
+    seconds = int(seconds)
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        return f"{seconds // 60}m"
+    elif seconds < 86400:
+        return f"{seconds // 3600}h"
+    elif seconds < 604800:
+        return f"{seconds // 86400}d"
+    else:
+        return f"{seconds // 604800}w"
 
 def combined_list_view(state, iface, on_pick=None):
     def _fragments():
@@ -75,7 +92,7 @@ def combined_list_view(state, iface, on_pick=None):
                 ch = str(meta.get("channel")) if meta.get("channel") is not None else "-"
                 short = f"{n.get('short',''):<10.10}"
                 num = f"#{n.get('num', 0):08x}"
-                age = f"{int(time.time() - n.get('last', 0))}s"
+                age = format_age(time.time() - n.get('last', 0))
                 line = f"{i:>2} {m}  {enc}  {ch:<2} {short} {num} {age:>4}"
 
                 def _node_handler(mouse_event, _num=n["num"]):
@@ -96,18 +113,39 @@ def combined_list_view(state, iface, on_pick=None):
 def log_view(state):
     def _text():
         return "\n".join(f" {line}" for line in state.log) if state.log else " Log empty."
-    return Window(content=FormattedTextControl(_text), wrap_lines=True, always_hide_cursor=True)
-
-def chat_view(state):
-    def _text():
-        key = state.dm_target if state.dm_target is not None else -1
-        msgs = state.chats.get(key, [])
-        return "\n".join(f" {line}" for line in msgs) if msgs else " (No messages)"
-
     return Window(
         content=FormattedTextControl(_text),
         wrap_lines=True,
         always_hide_cursor=True,
+        height=Dimension(weight=1, min=5),
+        right_margins=[ScrollbarMargin(display_arrows=True)],
+    )
+
+def chat_view(state):
+    def _frags():
+        to = state.dm_target if state.dm_target is not None else -1
+        msgs = state.chats.get(to, [])
+        out = []
+        for m in msgs:
+            sym = STATUS_SYMBOL.get(m.status, "?")
+            # style by status
+            style = {
+                MsgStatus.PENDING: "class:msg.pending",
+                MsgStatus.SENT: "class:msg.sent",
+                MsgStatus.RETRYING: "class:msg.retry",
+                MsgStatus.ACKED: "class:msg.acked",
+                MsgStatus.FAILED: "class:msg.failed",
+            }[m.status]
+            out.append((style, f"{sym} "))
+            out.append(("class:msg.body", m.text))
+            out.append(("", "\n"))
+        return out or [("", " (No messages)\n")]
+    return Window(
+        content=FormattedTextControl(_frags),
+        wrap_lines=True,
+        always_hide_cursor=True,
+        height=Dimension(weight=3, min=8),
+        right_margins=[ScrollbarMargin(display_arrows=True)],
     )
 
 def settings_view(state, iface, cfg):
@@ -119,6 +157,14 @@ def settings_view(state, iface, cfg):
     mqtt_on   = Checkbox(text="Enable MQTT", checked=bool(cfg.mqtt_enabled))
     mqtt_tls  = Checkbox(text="Use TLS", checked=bool(cfg.mqtt_tls))
     theme_box = TextArea(text=tm.name, height=1, multiline=False, read_only=True)
+
+    def _select_port():
+        async def _coro():
+            port = await dialogs.connect_port(get_app(), state, iface)
+            if port:
+                port_input.text = port
+        get_app().create_background_task(_coro())
+
 
     def do_save():
         try:
@@ -136,15 +182,6 @@ def settings_view(state, iface, cfg):
         except Exception as e:
             state.add_log(f"[settings] save error: {e}")
 
-    def do_connect():
-        try:
-            p = port_input.text.strip()
-            if p:
-                iface.set_port(p)
-                iface.start()
-        except Exception as e:
-            state.add_log(f"[connect] {e}")
-
     def cycle_theme(direction):
         if direction > 0:
             tm.cycle_next()
@@ -159,8 +196,7 @@ def settings_view(state, iface, cfg):
     form = HSplit(
         [
             Label("Serial Port"),
-            port_input,
-            VSplit([FlatButtonWindow("Connect", do_connect), FlatButtonWindow("Save", do_save)], padding=1),
+            VSplit([port_input, FlatButtonWindow("Select Port", _select_port)], padding=1),
             Label("MQTT Host"),
             mqtt_host,
             Label("MQTT Port"),
@@ -170,13 +206,14 @@ def settings_view(state, iface, cfg):
             VSplit([
                 FlatButtonWindow("-", lambda: cycle_theme(-1)),
                 theme_box,
-                FlatButtonWindow("-", lambda: cycle_theme(1)),
+                FlatButtonWindow("+", lambda: cycle_theme(1)),
             ], padding=1, width=Dimension(weight=1)),
             Label("Device Settings"),
             VSplit([
                 FlatButtonWindow("Edit Owner", lambda: get_app().create_background_task(dialogs.edit_owner(get_app(), state, iface))),
                 FlatButtonWindow("Reboot", lambda: get_app().create_background_task(dialogs.confirm_reboot(get_app(), state, iface))),
             ], padding=1),
+            VSplit([FlatButtonWindow("Save Settings", do_save)], padding=1),
         ],
         padding=1,
     )

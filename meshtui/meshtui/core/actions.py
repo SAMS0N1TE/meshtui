@@ -32,6 +32,6 @@ def reconnect(iface_class, port: str, bus):
     try:
         iface = iface_class(port)
         return iface
-    except Exception as e:
-        print(f"Reconnect failed: {e}")
+    except Exception:
+        # Reconnect failed, but don't print to avoid UI corruption
         return None

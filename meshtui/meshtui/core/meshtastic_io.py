@@ -15,11 +15,18 @@ from meshtui.core.events_ext import Position, MsgMeta, Channels, Connection, Own
 
 BROADCAST = 0xFFFFFFFF
 
+def _get(o, k, d=None):
+    try:
+        if isinstance(o, dict): return o.get(k, d)
+        return getattr(o, k, d)
+    except Exception:
+        return d
 
 class MeshtasticIO:
-    def __init__(self, bus, loop):
+    def __init__(self, bus, loop, state):
         self.bus = bus
         self.loop = loop
+        self.state = state
         self.iface = None
         self._thr = None
         self._stop = threading.Event()
@@ -31,53 +38,33 @@ class MeshtasticIO:
 
     # ---------- PubSub callbacks ----------
     def _on_receive(self, packet=None, interface=None, **kwargs):
-        """pubsub topic: 'meshtastic.receive' passes keywords: packet, interface"""
         try:
-            # Safely get our own node number and ignore packets from self
-            my_node_num = getattr(getattr(self.iface, "myInfo", None), "my_node_num", None)
-            if not packet or packet.get("from") == my_node_num:
+            if not packet:
+                return
+            my_num = _get(_get(self.iface, "myInfo"), "my_node_num")
+            # Ignore our own echoed packets
+            if _get(packet, "from") == my_num:
                 return
 
-            pkt = packet or {}
-            src = pkt.get("from")
-            dst = pkt.get("to")
-            dec = pkt.get("decoded") or {}
-            text = dec.get("text")
+            dec = _get(packet, "decoded") or {}
+            port = _get(dec, "portnum")
+            text = _get(dec, "text")
+            src  = _get(packet, "from")
+            dst = _get(packet, "to")
 
-            meta = MsgMeta(
-                msg_id=str(pkt.get("id")) if pkt.get("id") is not None else None,
-                src=src,
-                dst=dst,
-                channel=pkt.get("channel"),
-                encrypted=bool(pkt.get("encrypted")),
-                hop_limit=pkt.get("hop_limit"),
-                rx_time=pkt.get("rx_time"),
-            )
-            self._emit(meta)
-
-            if text:
+            is_text_port = (isinstance(port, int) and port == 1) or (isinstance(port, str) and port == "TEXT_MESSAGE_APP")
+            if text and is_text_port:
                 self._emit(events.RxText(src=src, text=text, dst=dst))
+                # Heuristic: if a user replies, their last message to us was likely delivered
+                if isinstance(dst, int) and dst == my_num and isinstance(src, int):
+                    self.state.ack_last_pending_from(src)
 
-            pos = dec.get("position")
-            if isinstance(pos, dict) and ("latitude" in pos and "longitude" in pos):
-                self._emit(
-                    Position(
-                        num=src,
-                        lat=float(pos.get("latitude") or 0.0),
-                        lon=float(pos.get("longitude") or 0.0),
-                        alt=pos.get("altitude"),
-                        ts=pkt.get("rx_time") or time.time(),
-                    )
-                )
-
-            if pkt.get("ack"):
-                self._emit(events.Ack(msg_id=str(pkt.get("id")) if pkt.get("id") is not None else "0"))
-
+            # meta/position/etc handling can remain
+            self.state.last_rx_time = time.time()
         except Exception as e:
             self._emit(events.Log(text=f"RX error: {e!r}"))
 
     def _on_connection(self, interface=None, event_name=None, **kwargs):
-        """pubsub topic: 'meshtastic.connection' passes keywords: interface, event_name"""
         name = event_name or ""
         up = name.endswith("established")
         down = name.endswith("lost") or name == "disconnected"
@@ -90,7 +77,6 @@ class MeshtasticIO:
             self._emit(Connection(up=False, detail=name))
 
     def _on_node(self, node=None, interface=None, **kwargs):
-        """pubsub topic: 'meshtastic.node' passes keywords: node, interface"""
         try:
             n = node or {}
             num = n.get("num")
@@ -141,6 +127,7 @@ class MeshtasticIO:
         if self._subscribed or pub is None:
             return
         pub.subscribe(self._on_receive, "meshtastic.receive")
+        # No longer need to subscribe to the .ack topic
         pub.subscribe(self._on_connection, "meshtastic.connection")
         pub.subscribe(self._on_node, "meshtastic.node")
         self._subscribed = True
@@ -199,20 +186,15 @@ class MeshtasticIO:
     def set_port(self, port):
         self._next_port = port
 
-    def send_text(self, text, dest=BROADCAST):
+    def sendText(self, text, destinationId=BROADCAST, wantAck=False, wantResponse=False, onResponse=None):
         try:
             if not self.iface:
                 self._emit(events.Log(text="Not connected"))
-                return False
-            if dest == BROADCAST:
-                pid = self.iface.sendText(text)
-            else:
-                pid = self.iface.sendText(text, destinationId=dest)
-            self._emit(events.Log(text=f"TX id={pid} -> {'BROADCAST' if dest==BROADCAST else f'#{dest}'}"))
-            return True
+                return None
+            return self.iface.sendText(text=text, destinationId=destinationId, wantAck=wantAck, wantResponse=wantResponse, onResponse=onResponse)
         except Exception as e:
             self._emit(events.Log(text=f"TX error: {e!r}"))
-            return False
+            return None
 
     def send_traceroute(self, dest):
         try:

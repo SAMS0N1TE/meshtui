@@ -28,6 +28,12 @@ except Exception:
             "map.water": "fg:ansiblue",
             "map.land": "fg:ansigreen",
             "map.structure": "fg:ansibrightblack",
+            "msg.pending": "fg:#aaaaaa",
+            "msg.sent":    "fg:#8888ff",
+            "msg.retry":   "fg:#ffd000",
+            "msg.acked":   "fg:#00d000",
+            "msg.failed":  "fg:#ff4040",
+            "msg.body":    "",
         },
         'forest': {
             "frame": "bg:#002b36 fg:#839496",

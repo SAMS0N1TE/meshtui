@@ -1,6 +1,6 @@
 # meshtui/ui_ptk/dialogs.py
 from __future__ import annotations
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from prompt_toolkit.shortcuts import input_dialog, radiolist_dialog, yes_no_dialog, message_dialog
 from meshtui.themes import ThemeManager
 
@@ -38,7 +38,7 @@ async def pick_channel(app, state, iface) -> None:
         state.add_log("Channel change not supported by this firmware/API")
     app.invalidate()
 
-async def connect_port(app, state, iface) -> None:
+async def connect_port(app, state, iface) -> Optional[str]:
     ports = _available_ports()
     port = None
     if ports:
@@ -48,13 +48,15 @@ async def connect_port(app, state, iface) -> None:
     if not port:
         port = await input_dialog(title="Connect", text="Enter serial port (e.g., COM5 or /dev/ttyUSB0):").run_async()
     if not port:
-        return
+        return None
     try:
-        iface.set_port(port); iface.start(port)
+        iface.set_port(port)
+        iface.start()
         state.add_log(f"Connecting to {port}")
     except Exception as e:
         state.add_log(f"Connect error: {e!r}")
     app.invalidate()
+    return port
 
 async def edit_owner(app, state, iface) -> None:
     dev = getattr(iface, "iface", None)
