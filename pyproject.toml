@@ -1,0 +1,16 @@
+[project]
+name = "meshtui"
+version = "0.1.0"
+dependencies = [
+    "prompt_toolkit>=3.0",
+    "meshtastic",
+    "paho-mqtt",
+    "pyserial",
+    "pypubsub",
+]
+
+[project.scripts]
+meshtui = "meshtui.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
