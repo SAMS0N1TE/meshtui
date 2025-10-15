@@ -4,7 +4,7 @@ from prompt_toolkit.styles import Style
 try:
     from themes import THEMES as _EXTERNAL_THEMES  # noqa: F401
     THEMES = _EXTERNAL_THEMES
-except Exception:
+except ImportError:
     THEMES = {
         'default': {
             "frame": "bg:#000080 fg:ansiwhite",
