@@ -10,13 +10,17 @@ except Exception:
 from meshtui.core import events
 
 class MQTTClient:
-    def __init__(self, bus, loop):
+    def __init__(self, bus, loop, state=None, cfg=None):
         self.bus = bus
         self.loop = loop
+        self.state = state
+        self.cfg = cfg
         self.client: Optional["mqtt.Client"] = None
         self._connected = False
 
     def _emit(self, ev):
+        if self.state and hasattr(self.state, "add_log") and isinstance(getattr(ev, "text", None), str):
+            self.state.add_log(ev.text)
         self.loop.call_soon_threadsafe(lambda: self.loop.create_task(self.bus.emit(ev)))
 
     # paho callbacks
@@ -76,3 +80,4 @@ class MQTTClient:
         except Exception:
             pass
         self.client = None
+        self._connected = False
