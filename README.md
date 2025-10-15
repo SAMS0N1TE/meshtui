@@ -90,31 +90,11 @@ If you're on Linux or macOS, you will need to run the application from source. E
 4. **Run the application:**
 
    ```
-   python main.py
+   python start_meshtui.py
    
    ```
 
-## Basic Usage
 
-* **`F8`**: Toggle between Chat view and Settings (Port Selection).
-
-* **`Tab`**: Switch between the Input and Nodes panels in Chat view.
-
-* **`Enter`**:
-
-  * In Input panel: Send message.
-
-  * In Nodes panel: Select a node for DM.
-
-  * In Settings panel: Select a port to connect.
-
-* **`Escape`**: Exit DM mode and return to Broadcast chat.
-
-* **`F5` (in Nodes panel)**: Send a traceroute to the selected node. (Broken for now, will work on a fix!)
-
-* **`F6`**: Cycle through available themes.
-
-* **`Ctrl+C` or `Ctrl+Q`**: Quit the application.
 
 ## 💡 Feedback & Contributions
 
