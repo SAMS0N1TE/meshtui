@@ -1,23 +1,16 @@
 [project]
 name = "meshtui"
-version = "1.0.0"
-authors = [
-  { name="SAMS0N1TE", email="support@terminalbay.com" },
-]
-description = "A terminal user interface for Meshtastic."
-readme = "README.md"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
+version = "0.1.0"
 dependencies = [
+    "prompt_toolkit>=3.0",
     "meshtastic",
+    "paho-mqtt",
     "pyserial",
-    "prompt-toolkit",
     "pypubsub",
 ]
 
 [project.scripts]
-meshtui = "main:main"
+meshtui = "meshtui.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
