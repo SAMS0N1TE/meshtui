@@ -58,10 +58,7 @@ async def main():
 
     # Constructors that match your real signatures
     iface = MeshtasticIO(bus, loop, state, cfg)
-    try:
-        mqtt = MQTTClient(bus, loop, state, cfg)
-    except TypeError:
-        mqtt = MQTTClient(bus, loop)
+    mqtt = MQTTClient(bus, loop, state, cfg)
 
     actions = build_actions(state=state, bus=bus, iface=iface, cfg=cfg)
     app = build_layout(
