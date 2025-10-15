@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 try:
     from meshtui.core.meshtastic_io import MeshtasticIO, BROADCAST
     from meshtui.core.ack_registry import ack_registry
-except Exception:
+except ModuleNotFoundError:
     # Fallback relative imports if package layout differs
     from .core.meshtastic_io import MeshtasticIO, BROADCAST  # type: ignore
     from .core.ack_registry import ack_registry  # type: ignore
