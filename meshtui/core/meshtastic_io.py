@@ -1,6 +1,7 @@
 # meshtui/core/meshtastic_io.py
 import threading
 import time
+import inspect
 
 try:
     import meshtastic
@@ -163,8 +164,33 @@ class MeshtasticIO:
         self.iface = None
 
     def _worker(self, first_port):
+        def _parse_tcp(target: str) -> tuple[str, int]:
+            s = target.strip()
+            if s.lower().startswith("tcp://"):
+                s = s[6:]
+            if s.startswith("["):
+                close = s.find("]")
+                if close != -1:
+                    host = s[1:close]
+                    rest = s[close + 1:].lstrip(":")
+                    try:
+                        return host, int(rest) if rest else 4403
+                    except Exception:
+                        return host, 4403
+            host, portnum = s, 4403
+            if ":" in s:
+                h, maybe = s.rsplit(":", 1)
+                if h:
+                    host = h
+                try:
+                    portnum = int(maybe)
+                except Exception:
+                    portnum = 4403
+            return host, portnum
+
         port = first_port
         self._subscribe()
+
         while not self._stop.is_set():
             if not port:
                 time.sleep(0.5)
@@ -174,19 +200,29 @@ class MeshtasticIO:
 
             try:
                 self._emit(events.Log(text=f"Connecting to {port}..."))
+                is_tcp = (":" in port) or ("." in port) or port.lower().startswith("tcp://")
 
-                is_tcp = ":" in port or "." in port
-
-                if is_tcp and meshtastic:
-                    self.iface = meshtastic.tcp_interface.TCPInterface(hostname=port)
-                elif not is_tcp and meshtastic:
+                if meshtastic is None:
+                    self.iface = None
+                elif is_tcp:
+                    host, tcp_port = _parse_tcp(port)
+                    ctor = meshtastic.tcp_interface.TCPInterface
+                    params = set(inspect.signature(ctor).parameters.keys())
+                    if "portNum" in params:
+                        self.iface = ctor(hostname=host, portNum=tcp_port)
+                    elif "port" in params:
+                        self.iface = ctor(hostname=host, port=tcp_port)
+                    else:
+                        # fall back to positional (hostname, portNum)
+                        self.iface = ctor(host, tcp_port)
+                    self._emit(events.Log(text=f"TCP {host}:{tcp_port}"))
+                else:
                     baud_rate = getattr(self.cfg, "baud_rate", None)
                     if baud_rate:
                         self.iface = meshtastic.serial_interface.SerialInterface(port, baudrate=baud_rate)
                     else:
                         self.iface = meshtastic.serial_interface.SerialInterface(port)
-                else:
-                    self.iface = None
+                    self._emit(events.Log(text=f"Serial {port} baud={baud_rate or 'default'}"))
 
                 if not self.iface:
                     self._emit(events.Log(text="Meshtastic library not installed"))
@@ -222,7 +258,7 @@ class MeshtasticIO:
         self._stop.set()
         self._close()
         if self._thr:
-            self._thr.join(timeout=1.0)
+            self._thr.join(timeout=3.0)
 
     def set_port(self, port):
         self._next_port = port

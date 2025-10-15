@@ -6,10 +6,6 @@ ANSI_ESCAPE_PATTERN = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 CONTROL_CHARS_PATTERN = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
 
 def sanitize_text(text: str) -> str:
-    """
-    Removes ANSI escape sequences and non-printable control characters from a string,
-    while preserving common whitespace like newlines and tabs.
-    """
     if not isinstance(text, str):
         return ""
 

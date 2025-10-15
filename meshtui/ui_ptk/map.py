@@ -4,7 +4,6 @@ from prompt_toolkit.layout import Window
 from typing import Dict, Tuple
 
 def _project(lat: float, lon: float) -> Tuple[int, int]:
-    """Simple pseudo-Mercator projection for ASCII map rendering."""
     x = int((lon + 180) * 0.25)
     y = int((90 - lat) * 0.25)
     return x, y

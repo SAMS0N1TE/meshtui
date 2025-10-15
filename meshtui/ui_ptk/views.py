@@ -19,21 +19,14 @@ from meshtui.model import STATUS_SYMBOL, MsgStatus
 MouseHandler = Callable[[MouseEvent], Optional[object]]
 
 def _noop_handler(_: MouseEvent) -> object:
-    # Tell prompt_toolkit "I didn't handle this"; allows normal bubbling.
     return NotImplemented
 
 def _as_fragment(style: str, text: str, handler: Optional[MouseHandler] = None) -> tuple:
-    """
-    Build a fragment tuple, but only attach a handler if it's callable.
-    """
     if callable(handler):
         return (style, text, handler)
     return (style, text)
 
 def _safe_fragments(items: Iterable[Any]) -> StyleAndTextTuples:
-    """
-    Coerce arbitrary items into valid StyleAndTextTuples and strip invalid handlers.
-    """
     out: List[Tuple] = []
     for it in items:
         if isinstance(it, tuple):
@@ -49,9 +42,6 @@ def _safe_fragments(items: Iterable[Any]) -> StyleAndTextTuples:
     return to_formatted_text(out)
 
 class SafeFormattedTextControl(FormattedTextControl):
-    """
-    Wraps a callable that returns fragments and guarantees valid tuples.
-    """
     def __init__(self, text: Callable[[], Iterable[Any]], **kwargs):
         super().__init__(text=lambda: _safe_fragments(text()), **kwargs)
 
@@ -68,9 +58,6 @@ def format_age(seconds: float) -> str:
 # -------- Views -----------------------------------------------------------
 
 def combined_list_view(state, iface, on_pick: Optional[Callable[[int], None]] = None) -> Window:
-    """
-    Nodes + channels list with scrollbar and safe mouse handlers.
-    """
     def _fragments():
         frags: List[Tuple] = []
 

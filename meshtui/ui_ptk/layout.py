@@ -2,7 +2,7 @@
 from prompt_toolkit.application import Application, get_app
 from prompt_toolkit.layout import Layout, HSplit, VSplit
 from prompt_toolkit.layout.dimension import Dimension
-from prompt_toolkit.layout.containers import ConditionalContainer
+from prompt_toolkit.layout.containers import ConditionalContainer, FloatContainer, Float
 from prompt_toolkit.filters import Condition, has_focus
 from prompt_toolkit.widgets import Label, Frame, TextArea, Box
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -55,7 +55,6 @@ def build_layout(state, actions, iface, bus, initial_theme: str | None = None, c
     def _(event):
         event.app.layout.focus_previous()
 
-
     log_frame = Frame(log_view(state), title="Log", style="class:frame")
     map_frame = Frame(build_map(state), title="Map", style="class:frame")
     settings_frame = Frame(settings_view(state, iface, cfg), title="Settings", style="class:frame")
@@ -78,7 +77,7 @@ def build_layout(state, actions, iface, bus, initial_theme: str | None = None, c
         ConditionalContainer(nodes_frame, filter=~has_focus(nodes_window)),
         bottom_stack,
     ], width=50)
-    # Set the height of the nodes_frame to be a fraction of the total height, with a minimum
+    # Keep the proportional height behavior for nodes.
     nodes_frame.height = Dimension(weight=0.6, min=6)
     focused_nodes_frame.height = Dimension(weight=0.6, min=6)
 
@@ -86,22 +85,26 @@ def build_layout(state, actions, iface, bus, initial_theme: str | None = None, c
     header = Label("Meshtastic TUI", style="class:header")
     status = status_view(state, theme_name_provider=lambda: theme.name)
 
-    # Main layout using a VSplit for the two columns
+    # Main layout using a VSplit for two columns
     main_view = VSplit([
-        # Left column
         left_column,
-        # Right column
         chat_frame
     ])
 
-
-    # The root container
-    root_container = HSplit([
+    # Root content as before
+    root_content = HSplit([
         header,
         main_view,
         status,
         input_box
     ])
+
+    # Wrap root content in a FloatContainer so dialogs can overlay non-blocking
+    root_container = FloatContainer(
+        content=root_content,
+        floats=[],     # dialogs will push/pop Float(...) here
+        modal=False,
+    )
 
     merged_kb = merge_key_bindings([main_kb, scroll_kb])
 
@@ -122,7 +125,6 @@ def build_layout(state, actions, iface, bus, initial_theme: str | None = None, c
 
     def _persist():
         if cfg:
-            # Removed splitter persistence
             cfg.last_tab = bottom_tab["v"]
             try:
                 cfg.save()

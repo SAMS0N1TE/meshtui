@@ -8,13 +8,8 @@ from typing import Any
 import asyncio
 
 async def send_task(state: Any, iface: Any, dest: str, text: str) -> None:
-    """
-    Fire-and-wait send. Transport handles ACK/timeout and state updates.
-    """
-    # Create the outgoing message and add it to the state
     msg = state.add_outgoing(dest, text)
     try:
-        # Pass the message to send_with_ack
         await send_with_ack(state, iface, dest, text, msg=msg)
     except Exception as e:
         if hasattr(state, "log_error"):

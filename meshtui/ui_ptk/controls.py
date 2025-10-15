@@ -23,7 +23,6 @@ class FlatButtonWindow(Window):
         def _handler(me):
             t = me.event_type
 
-            # Ignore wheel events so containers can scroll without crashing.
             if t in (MouseEventType.SCROLL_UP, MouseEventType.SCROLL_DOWN):
                 return NotImplemented
 
@@ -41,23 +40,20 @@ class FlatButtonWindow(Window):
             if t == MouseEventType.MOUSE_UP:
                 was_pressed = self._pressed
                 self._pressed = False
-                # Best-effort hover reset when mouse up occurs outside.
                 self._hover = False
                 get_app().invalidate()
                 if was_pressed and callable(self.on_click):
                     self.on_click()
                 return None
 
-            # For any other mouse events, don't handle.
             return NotImplemented
 
         super().__init__(
             content=FormattedTextControl(_fragments, focusable=True),
             height=1,
-            dont_extend_width=True,  # keep button compact; VSplit won't stretch it
+            dont_extend_width=True,
         )
 
 
 def FlatButton(label: str, on_click):
-    """Backward-compat alias used by layout code."""
     return FlatButtonWindow(label, on_click)

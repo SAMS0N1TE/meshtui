@@ -4,10 +4,6 @@ import time
 from typing import Dict, Optional, Tuple
 
 class AckRegistry:
-    """
-    Thread-safe map of tx_id -> {"state": "PENDING"/"ACK"/"NAK", "from": int|None, "ts": float}
-    Also provides wait/notify primitives for blocking until ACK/NAK.
-    """
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._status: Dict[int, Dict] = {}
@@ -33,9 +29,6 @@ class AckRegistry:
             return dict(self._status.get(tx_id) or {}) or None
 
     def wait_for(self, tx_id: int, timeout: float) -> Optional[Dict]:
-        """
-        Block until ACK/NAK or timeout.
-        """
         with self._lock:
             ev = self._waiters.setdefault(tx_id, threading.Event())
             # If already decided, return immediately

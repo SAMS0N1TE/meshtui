@@ -15,7 +15,7 @@ class Config:
     mqtt_tls: bool = False
     active_channels: list[int] = None
     split_left: float = 0.35           # 0..1 width of left column
-    split_nodes_log: float = 0.65      # 0..1 height of nodes vs log in left column
+    split_nodes_log: float = 0.65      # 0..1 height of nodes vs log in left column, i hate you nodes window
     last_tab: str = "Chat"
 
     @staticmethod

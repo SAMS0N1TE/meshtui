@@ -9,11 +9,9 @@ def apply_event(state, ev):
         state.upsert_node(ev.num, ev.short, ev.ts)
     elif isinstance(ev, events.RxText):
         state.last_rx_time = time.time()
-        # If the message is a broadcast, or a DM to us, add it to the chat
         if ev.dst == BROADCAST:
             state.add_chat(None, ev.text, me=False, sender_id=ev.src)
         else:
-            # It's a DM, add it to the sender's chat history
             state.add_chat(ev.src, ev.text, me=False, sender_id=ev.src)
     elif isinstance(ev, events.Ack):
         state.add_log(f"ACK {ev.msg_id}")
