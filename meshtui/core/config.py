@@ -1,6 +1,6 @@
 # meshtui/core/config.py
 import os, json
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field, asdict
 
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), ".meshtui.json")
 
@@ -13,7 +13,7 @@ class Config:
     mqtt_host: str = "localhost"
     mqtt_port: int = 1883
     mqtt_tls: bool = False
-    active_channels: list[int] = None
+    active_channels: list[int] = field(default_factory=list)
     split_left: float = 0.35           # 0..1 width of left column
     split_nodes_log: float = 0.65      # 0..1 height of nodes vs log in left column, i hate you nodes window
     last_tab: str = "Chat"
@@ -41,8 +41,10 @@ class Config:
 
     def save(self, path: str = DEFAULT_PATH) -> None:
         data = asdict(self)
-        data["active_channels"] = list(self.active_channels or [])
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        data["active_channels"] = list(self.active_channels)
+        directory = os.path.dirname(path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
