@@ -1,3 +1,11 @@
+
+
+# DISCLAIMER: This repo has been put on hold and may not be updated for quite a bit. It's also a bit outdated and probably has issues. I will eventually be carrying over the meshtastic functionalites, as well as meshcore to my newer project: [CartoTUI](https://github.com/SAMS0N1TE/CartoTUI)
+
+
+
+
+
 ![Screenshot](screenshots/Map3.png)
 
 # Meshtastic TUI
